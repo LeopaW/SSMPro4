@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xa.mapper.QuestionsMapper">
+
+    <resultMap id="withAnswerSimpleMap" type="com.xa.pojo.Questions">
+        <id property="id" column="id"></id>
+        <result property="title" column="title"></result>
+        <result property="detailDesc" column="detailDesc"></result>
+        <collection property="answers" ofType="com.xa.pojo.Answers">
+            <!--<id></id>-->
+            <result property="ansContent" column="ansContent"></result>
+            <result property="ansDate" column="ansDate"></result>
+        </collection>
+    </resultMap>
+
+
+    <insert id="add">
+        insert into questions
+        <trim prefix="(" suffix=")" prefixOverrides=",">
+            <if test="title != null and title != ''">
+                ,title
+            </if>
+            <if test="detailDesc != null and detailDesc != ''">
+                ,detailDesc
+            </if>
+            <if test="answerCount != null">
+                ,answerCount
+            </if>
+            <if test="lastModified != null ">
+                ,lastModified
+            </if>
+        </trim>
+
+        <trim prefix="values(" suffix=")" prefixOverrides=",">
+            <if test="title != null and title != ''">
+                ,#{title}
+            </if>
+            <if test="detailDesc != null and detailDesc != ''">
+                ,#{detailDesc}
+            </if>
+            <if test="answerCount != null">
+                ,#{answerCount}
+            </if>
+            <if test="lastModified != null ">
+                ,#{lastModified}
+            </if>
+        </trim>
+
+    </insert>
+    <update id="updateAnsCountPlusOne">
+        update questions
+        <set>
+            answerCount = answerCount + 1
+        </set>
+        <where>
+            id = #{qid}
+        </where>
+    </update>
+
+    <select id="queryAll" resultType="com.xa.pojo.Questions">
+        select * from questions
+        order by lastModified desc ;
+    </select>
+    <select id="queryWithAnswers"  resultMap="withAnswerSimpleMap">
+        select  t1.id,t1.title,t1.detailDesc,
+        t2.ansContent,t2.ansDate
+        from questions t1, answers t2
+        where t1.id = t2.qid
+        and t1.id = #{id}
+        order by t2.ansDate desc
+
+    </select>
+</mapper>
